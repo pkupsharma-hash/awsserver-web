@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #000000;
+  color: #ffffff;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+/* Fixed SVG Noise Filter */
+.noise-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Animated Floating Orbs - Premium Look */
+.orb-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(80px);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  animation: floatOrb 20s infinite ease-in-out alternate;
+}
+
+.orb-blue { background: #4285f4; width: 300px; height: 300px; top: 10%; left: 20%; }
+.orb-purple { background: #9b72cb; width: 400px; height: 400px; top: 40%; right: 10%; animation-delay: -5s; }
+.orb-pink { background: #ea4335; width: 350px; height: 350px; bottom: 10%; left: 30%; animation-delay: -10s; }
+.orb-yellow { background: #fbbc05; width: 250px; height: 250px; bottom: 20%; right: 30%; animation-delay: -15s; }
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 50px) scale(1.1); }
+  100% { transform: translate(-50px, -20px) scale(0.9); }
+}
+
+/* 3D Glass Card Effect */
+.glass-card {
+  background: rgba(30, 30, 35, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Animated Gradient Border Button */
+.ai-button {
+  position: relative;
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 50px;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  background: transparent;
+  z-index: 1;
+  border: none;
+  outline: none;
+}
+
+.ai-button::before {
+  content: "";
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 50px;
+  background: linear-gradient(45deg, #4285f4, #9b72cb, #ea4335, #fbbc05, #4285f4);
+  background-size: 200%;
+  z-index: -2;
+  animation: animateGradient 4s linear infinite;
+}
+
+.ai-button::after {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px; right: 2px; bottom: 2px;
+  background: #131314;
+  border-radius: 50px;
+  z-index: -1;
+}
+
+.ai-button:hover {
+  transform: scale(1.02);
+}
+
+@keyframes animateGradient {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Profile Photo Zoom */
+.profile-photo {
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+}
+.profile-photo:hover {
+  transform: scale(2.5);
+}
