@@ -80,9 +80,9 @@ export default function AdminPanel() {
 
   const fetchData = async () => {
     try {
-      const sRes = await axios.get("http://localhost:5000/api/services");
+      const sRes = await axios.get("https://awsserver-web.onrender.com/api/services");
       setServicesList(sRes.data);
-      const pRes = await axios.get("http://localhost:5000/api/products");
+      const pRes = await axios.get("https://awsserver-web.onrender.com/api/products");
       setProductsList(pRes.data);
     } catch (error) {
       console.error("Data fetch error", error);
@@ -101,7 +101,7 @@ export default function AdminPanel() {
   const handleLogin = async (e: any) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const res = await axios.post("https://awsserver-web.onrender.com/api/auth/login", { email, password });
       localStorage.setItem("adminToken", res.data.token);
       setToken(res.data.token);
       setIsLoggedIn(true);
@@ -117,7 +117,7 @@ export default function AdminPanel() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const newService = { title, category, shortDescription: shortDesc, fullDescription: shortDesc, priceStartingFrom: Number(price) };
-      await axios.post("http://localhost:5000/api/services", newService, config);
+      await axios.post("https://awsserver-web.onrender.com/api/services", newService, config);
       alert("🚀 Service Added!");
       setTitle(""); setCategory(""); setShortDesc(""); setPrice("");
       fetchData();
@@ -129,7 +129,7 @@ export default function AdminPanel() {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const newProduct = { name: pName, category: pCategory, description: pDesc, price: Number(pPrice) };
-      await axios.post("http://localhost:5000/api/products", newProduct, config);
+      await axios.post("https://awsserver-web.onrender.com/api/products", newProduct, config);
       alert("📦 Product Added!");
       setPName(""); setPCategory(""); setPDesc(""); setPPrice("");
       fetchData();
@@ -140,7 +140,7 @@ export default function AdminPanel() {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put("http://localhost:5000/api/auth/update", { email: newEmail, password: newPassword }, config);
+      await axios.put("https://awsserver-web.onrender.com/api/auth/update", { email: newEmail, password: newPassword }, config);
       alert("✅ Credentials Updated Successfully! Please login again with your new details.");
       handleLogout();
     } catch (error: any) { 
@@ -152,7 +152,7 @@ export default function AdminPanel() {
     if(!window.confirm("Kya aap sach mein is service ko delete karna chahte hain?")) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`http://localhost:5000/api/services/${id}`, config);
+      await axios.delete(`https://awsserver-web.onrender.com/api/services/${id}`, config);
       alert("🗑️ Service Deleted!");
       fetchData(); 
     } catch (error) { alert("❌ Delete failed!"); }
@@ -162,7 +162,7 @@ export default function AdminPanel() {
     if(!window.confirm("Kya aap sach mein is product ko delete karna chahte hain?")) return;
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.delete(`http://localhost:5000/api/products/${id}`, config);
+      await axios.delete(`https://awsserver-web.onrender.com/api/products/${id}`, config);
       alert("🗑️ Product Deleted!");
       fetchData(); 
     } catch (error) { alert("❌ Delete failed!"); }

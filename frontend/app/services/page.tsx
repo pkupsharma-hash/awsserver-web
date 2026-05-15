@@ -13,7 +13,7 @@ export default function ServicesPage() {
 
   // Backend se data fetch karne ka logic
   useEffect(() => {
-    axios.get("http://localhost:5000/api/services")
+    axios.get("https://awsserver-web.onrender.com/api/services")
       .then((response) => {
         setServices(response.data);
         setLoading(false);

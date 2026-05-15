@@ -12,7 +12,7 @@ export default function ProductsPage() {
   const myPhoneNumber = "918219417584";
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/products")
+    axios.get("https://awsserver-web.onrender.com/api/products")
       .then((response) => {
         setProducts(response.data);
         setLoading(false);
