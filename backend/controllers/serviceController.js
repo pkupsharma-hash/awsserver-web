@@ -35,6 +35,37 @@ const createService = async (req, res) => {
     }
 };
 
+// @desc    Update an existing service
+const updateService = async (req, res) => {
+    try {
+        const { title, category, shortDescription, fullDescription, priceStartingFrom } = req.body;
+
+        const service = await Service.findById(req.params.id);
+        
+        if (!service) {
+            return res.status(404).json({ message: 'Service not found' });
+        }
+
+        // Defensive fields update logic
+        service.title = title || service.title;
+        service.category = category || service.category;
+        service.shortDescription = shortDescription || service.shortDescription;
+        service.fullDescription = fullDescription || service.fullDescription;
+        service.priceStartingFrom = priceStartingFrom !== undefined ? Number(priceStartingFrom) : service.priceStartingFrom;
+
+        // Agar admin ne naya icon ya image upload kiya ho
+        if (req.file) {
+            service.iconOrImage = `/uploads/${req.file.filename}`;
+        }
+
+        const updatedService = await service.save();
+        res.json(updatedService);
+    } catch (error) {
+        console.log("UPDATE DATABASE ERROR:", error.message);
+        res.status(400).json({ message: error.message });
+    }
+};
+
 // @desc    Delete a service
 const deleteService = async (req, res) => {
     try {
@@ -50,4 +81,4 @@ const deleteService = async (req, res) => {
     }
 };
 
-module.exports = { getServices, createService, deleteService };
+module.exports = { getServices, createService, updateService, deleteService };
