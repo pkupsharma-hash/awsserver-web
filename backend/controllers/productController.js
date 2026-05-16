@@ -41,6 +41,45 @@ const createProduct = async (req, res) => {
     }
 };
 
+// @desc    Update an existing product (Sirf Admin ke liye)
+const updateProduct = async (req, res) => {
+    try {
+        const { name, category, description, features, price, demoLink } = req.body;
+
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Hacker-Proof Safe Fields Update Logic
+        product.name = name || product.name;
+        product.category = category || product.category;
+        product.description = description || product.description;
+        product.demoLink = demoLink || product.demoLink;
+        product.price = price !== undefined ? Number(price) : product.price;
+
+        // Features array convert karne ka logic (agar frontend se edit karte waqt string aaye)
+        if (features !== undefined) {
+            let featuresArray = features;
+            if (typeof features === 'string') {
+                featuresArray = features.split(',').map(f => f.trim());
+            }
+            product.features = featuresArray;
+        }
+
+        // Agar admin ne naye edit mein nayi image upload ki ho
+        if (req.file) {
+            product.productImage = `/uploads/${req.file.filename}`;
+        }
+
+        const updatedProduct = await product.save();
+        res.json(updatedProduct);
+    } catch (error) {
+        console.log("UPDATE PRODUCT DATABASE ERROR:", error.message);
+        res.status(400).json({ message: 'Invalid data or update failed' });
+    }
+};
+
 // @desc    Delete a product (Sirf Admin ke liye)
 const deleteProduct = async (req, res) => {
     try {
@@ -56,4 +95,4 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-module.exports = { getProducts, createProduct, deleteProduct };
+module.exports = { getProducts, createProduct, updateProduct, deleteProduct };
