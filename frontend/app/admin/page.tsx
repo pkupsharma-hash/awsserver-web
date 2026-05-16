@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Lock, Mail, Eye, EyeOff, ShieldCheck, Key, Trash2, Settings } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, ShieldCheck, Key, Trash2, Settings, Edit } from "lucide-react";
 
 export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,17 +22,19 @@ export default function AdminPanel() {
   // Dashboard Tab State
   const [activeTab, setActiveTab] = useState("service");
 
-  // Add Service States
+  // Add/Edit Service States
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [shortDesc, setShortDesc] = useState("");
   const [price, setPrice] = useState("");
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
-  // Add Product States
+  // Add/Edit Product States
   const [pName, setPName] = useState("");
   const [pCategory, setPCategory] = useState("");
   const [pDesc, setPDesc] = useState("");
   const [pPrice, setPPrice] = useState("");
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
   // Update Credentials States
   const [newEmail, setNewEmail] = useState("");
@@ -116,24 +118,64 @@ export default function AdminPanel() {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const newService = { title, category, shortDescription: shortDesc, fullDescription: shortDesc, priceStartingFrom: Number(price) };
-      await axios.post("https://awsserver-web.onrender.com/api/services", newService, config);
-      alert("🚀 Service Added!");
+      const serviceData = { title, category, shortDescription: shortDesc, fullDescription: shortDesc, priceStartingFrom: Number(price) };
+      
+      if (editingServiceId) {
+        // Update Logic
+        await axios.put(`https://awsserver-web.onrender.com/api/services/${editingServiceId}`, serviceData, config);
+        alert("🚀 Service Updated Successfully!");
+        setEditingServiceId(null);
+      } else {
+        // Insert Logic
+        await axios.post("https://awsserver-web.onrender.com/api/services", serviceData, config);
+        alert("🚀 Service Added!");
+      }
+
       setTitle(""); setCategory(""); setShortDesc(""); setPrice("");
       fetchData();
-    } catch (error: any) { alert("❌ Error: " + (error.response?.data?.message || "Server Error")); }
+    } catch (error: any) { 
+      alert("❌ Error: " + (error.response?.data?.message || "Server Error")); 
+    }
+  };
+
+  const startEditService = (srv: any) => {
+    setEditingServiceId(srv._id);
+    setTitle(srv.title);
+    setCategory(srv.category || "");
+    setShortDesc(srv.shortDescription || srv.fullDescription || "");
+    setPrice(srv.priceStartingFrom.toString());
   };
 
   const handleAddProduct = async (e: any) => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const newProduct = { name: pName, category: pCategory, description: pDesc, price: Number(pPrice) };
-      await axios.post("https://awsserver-web.onrender.com/api/products", newProduct, config);
-      alert("📦 Product Added!");
+      const productData = { name: pName, category: pCategory, description: pDesc, price: Number(pPrice) };
+      
+      if (editingProductId) {
+        // Update Logic
+        await axios.put(`https://awsserver-web.onrender.com/api/products/${editingProductId}`, productData, config);
+        alert("📦 Product Updated Successfully!");
+        setEditingProductId(null);
+      } else {
+        // Insert Logic
+        await axios.post("https://awsserver-web.onrender.com/api/products", productData, config);
+        alert("📦 Product Added!");
+      }
+
       setPName(""); setPCategory(""); setPDesc(""); setPPrice("");
       fetchData();
-    } catch (error: any) { alert("❌ Error: " + (error.response?.data?.message || "Server Error")); }
+    } catch (error: any) { 
+      alert("❌ Error: " + (error.response?.data?.message || "Server Error")); 
+    }
+  };
+
+  const startEditProduct = (prod: any) => {
+    setEditingProductId(prod._id);
+    setPName(prod.name);
+    setPCategory(prod.category || "");
+    setPDesc(prod.description || "");
+    setPPrice(prod.price.toString());
   };
 
   const handleUpdateCredentials = async (e: any) => {
@@ -154,6 +196,10 @@ export default function AdminPanel() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`https://awsserver-web.onrender.com/api/services/${id}`, config);
       alert("🗑️ Service Deleted!");
+      if(editingServiceId === id) {
+        setEditingServiceId(null);
+        setTitle(""); setCategory(""); setShortDesc(""); setPrice("");
+      }
       fetchData(); 
     } catch (error) { alert("❌ Delete failed!"); }
   };
@@ -164,6 +210,10 @@ export default function AdminPanel() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`https://awsserver-web.onrender.com/api/products/${id}`, config);
       alert("🗑️ Product Deleted!");
+      if(editingProductId === id) {
+        setEditingProductId(null);
+        setPName(""); setPCategory(""); setPDesc(""); setPPrice("");
+      }
       fetchData(); 
     } catch (error) { alert("❌ Delete failed!"); }
   };
@@ -325,12 +375,30 @@ export default function AdminPanel() {
           {activeTab === "service" && (
             <div style={{ animation: "fadeIn 0.5s" }}>
               <form onSubmit={handleAddService} style={{ marginBottom: "40px", background: "rgba(0,0,0,0.3)", padding: "25px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <h3 style={{ marginBottom: "20px", color: "#4285f4" }}>Add New Service</h3>
+                <h3 style={{ marginBottom: "20px", color: "#4285f4" }}>
+                  {editingServiceId ? "Edit Existing Service" : "Add New Service"}
+                </h3>
                 <input type="text" placeholder="Service Title" value={title} onChange={(e) => setTitle(e.target.value)} style={dashInputStyle} required />
                 <input type="text" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} style={dashInputStyle} required />
                 <textarea placeholder="Short Description..." value={shortDesc} onChange={(e) => setShortDesc(e.target.value)} style={{ ...dashInputStyle, minHeight: "80px" }} required />
                 <input type="number" placeholder="Price Starting From" value={price} onChange={(e) => setPrice(e.target.value)} style={dashInputStyle} required />
-                <button type="submit" className="ai-button" style={{ width: "100%", marginTop: "10px" }}>Save Service</button>
+                
+                <button type="submit" className="ai-button" style={{ width: "100%", marginTop: "10px" }}>
+                  {editingServiceId ? "⚡ Update Service" : "Save Service"}
+                </button>
+
+                {editingServiceId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setEditingServiceId(null);
+                      setTitle(""); setCategory(""); setShortDesc(""); setPrice("");
+                    }} 
+                    style={{ width: "100%", marginTop: "10px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", padding: "12px", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
               </form>
 
               <h3 style={{ color: "#d1d5db", borderBottom: "1px solid rgba(255,255,255,0.2)", paddingBottom: "10px", marginBottom: "15px" }}>Manage Existing Services</h3>
@@ -341,9 +409,14 @@ export default function AdminPanel() {
                       <h4 style={{ margin: 0, fontSize: "1.1rem", color: "#ffffff" }}>{srv.title}</h4>
                       <span style={{ fontSize: "0.85rem", color: "#9ca3af" }}>₹{srv.priceStartingFrom}</span>
                     </div>
-                    <button onClick={() => handleDeleteService(srv._id)} style={{ background: "#ea4335", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Delete Service">
-                      <Trash2 size={18} />
-                    </button>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button onClick={() => startEditService(srv)} style={{ background: "#4285f4", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Edit Service">
+                        <Edit size={18} />
+                      </button>
+                      <button onClick={() => handleDeleteService(srv._id)} style={{ background: "#ea4335", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Delete Service">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {servicesList.length === 0 && <p style={{ color: "#9ca3af" }}>No services found.</p>}
@@ -355,12 +428,30 @@ export default function AdminPanel() {
           {activeTab === "product" && (
             <div style={{ animation: "fadeIn 0.5s" }}>
               <form onSubmit={handleAddProduct} style={{ marginBottom: "40px", background: "rgba(0,0,0,0.3)", padding: "25px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <h3 style={{ marginBottom: "20px", color: "#ea4335" }}>Add New Software Product</h3>
+                <h3 style={{ marginBottom: "20px", color: "#ea4335" }}>
+                  {editingProductId ? "Edit Existing Software Product" : "Add New Software Product"}
+                </h3>
                 <input type="text" placeholder="Product Name" value={pName} onChange={(e) => setPName(e.target.value)} style={dashInputStyle} required />
                 <input type="text" placeholder="Category" value={pCategory} onChange={(e) => setPCategory(e.target.value)} style={dashInputStyle} required />
                 <textarea placeholder="Product Description..." value={pDesc} onChange={(e) => setPDesc(e.target.value)} style={{ ...dashInputStyle, minHeight: "80px" }} required />
                 <input type="number" placeholder="Fixed Price" value={pPrice} onChange={(e) => setPPrice(e.target.value)} style={dashInputStyle} required />
-                <button type="submit" className="ai-button" style={{ width: "100%", marginTop: "10px", filter: "hue-rotate(90deg)" }}>Save Product</button>
+                
+                <button type="submit" className="ai-button" style={{ width: "100%", marginTop: "10px", filter: "hue-rotate(90deg)" }}>
+                  {editingProductId ? "⚡ Update Product" : "Save Product"}
+                </button>
+
+                {editingProductId && (
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setEditingProductId(null);
+                      setPName(""); setPCategory(""); setPDesc(""); setPPrice("");
+                    }} 
+                    style={{ width: "100%", marginTop: "10px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", padding: "12px", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}
+                  >
+                    Cancel Edit
+                  </button>
+                )}
               </form>
 
               <h3 style={{ color: "#d1d5db", borderBottom: "1px solid rgba(255,255,255,0.2)", paddingBottom: "10px", marginBottom: "15px" }}>Manage Existing Products</h3>
@@ -371,9 +462,14 @@ export default function AdminPanel() {
                       <h4 style={{ margin: 0, fontSize: "1.1rem", color: "#ffffff" }}>{prod.name}</h4>
                       <span style={{ fontSize: "0.85rem", color: "#9ca3af" }}>₹{prod.price}</span>
                     </div>
-                    <button onClick={() => handleDeleteProduct(prod._id)} style={{ background: "#ea4335", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Delete Product">
-                      <Trash2 size={18} />
-                    </button>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button onClick={() => startEditProduct(prod)} style={{ background: "#fbbc05", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Edit Product">
+                        <Edit size={18} />
+                      </button>
+                      <button onClick={() => handleDeleteProduct(prod._id)} style={{ background: "#ea4335", color: "white", border: "none", padding: "8px", borderRadius: "5px", cursor: "pointer" }} title="Delete Product">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {productsList.length === 0 && <p style={{ color: "#9ca3af" }}>No products found.</p>}
